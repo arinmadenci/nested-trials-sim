@@ -1,8 +1,9 @@
 # setup simulated dataset
 if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(tidyverse)
-n=500
-dat <- data.frame("id"=rep(1:n, each=30), # say we had 90 day follow-up for each individual in this example 
-                  # (note that even if you are ultimately interested in 30-day follow-up, you will want to have more than that because the nested trials start at different points in time)
+n=500 # simulating dataset with 500 individuals
+dat <- data.frame("id"=rep(1:n, each=30), # say we had full 90 day follow-up available for each individual in this example 
+                  # (note that even if you are ultimately interested in 30-day follow-up as you mentioned, 
+                  # you will want to have collected more than that initially because the nested trials start at different points in time)
                   "t"=rep(1:30, times=n),
                   "gender"=rep(rbinom(n=n, size=1, prob=0.5), each=30), # example of time-fixed baseline covariate
                   "systolic"=rnorm(n=n*30, mean=120, sd=10), # example of covariate that varies over time
@@ -19,8 +20,8 @@ dat <- data.frame("id"=rep(1:n, each=30), # say we had 90 day follow-up for each
   
 
 # expand trials
-new.dat <- dat %>% mutate(eligible = ifelse(icu==0,1,0)) %>% # example of defining eligibility criteria (in this case just based on not being in ICU), prior to expanding out the trials
-  group_by(id) %>% mutate(clone = row_number()) %>% ungroup() %>% # in this case, "clone" is identical to "t" here
+new.dat <- dat %>% mutate(eligible = ifelse(icu==0,1,0)) %>% # example of defining eligibility criteria (in this case just based on not being in ICU), prior to expanding out the trials (but without restricting to eligible individuals only *yet*)
+  group_by(id) %>% mutate(clone = row_number()) %>% ungroup() %>% # in this case, "clone" is identical to "t"
   mutate(id_clone = paste0(id,"_",clone)) # temporarily creates a new id defined by "id" and "clone" number
 
   # observed intervention: plasma
