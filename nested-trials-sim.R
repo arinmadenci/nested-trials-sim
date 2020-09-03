@@ -1,5 +1,5 @@
 # setup simulated dataset
-if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(tidyverse)
+if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(tidyverse, here)
 n=500 # simulating dataset with 500 individuals
 dat <- data.frame("id"=rep(1:n, each=30), # say we had full 90 day follow-up available for each individual in this example 
                   # (note that even if you are ultimately interested in 30-day follow-up as you mentioned, 
@@ -54,3 +54,5 @@ expanded.dat <- bind_rows(new.dat_plasma %>% mutate(group = "plasma"), new.dat_n
   mutate_at(vars(t, systolic), list(bl = ~ first(.))) %>% # covariate indicating which hospital day each trial was started on
   ungroup() %>% select(-c(id, id_clone, clone, t, systolic))
 rm(dat, new.dat, new.dat_no.plasma, new.dat_plasma, n, n.unexposed, temp.no.plasma.ids)
+
+save(expanded.dat, file=here::here("expanded-dat.Rda"))
