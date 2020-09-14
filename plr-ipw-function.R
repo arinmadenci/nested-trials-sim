@@ -4,6 +4,10 @@ plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator
   options(warn=2)
   if (!require("pacman")) install.packages("pacman"); library(pacman)
   p_load(tidyverse, splines)
+  
+  assertthat::are_equal(sum(all.vars(as.formula(formula.treatment.numerator)) %in% all.vars(as.formula(formula.outcome))),
+                        length(all.vars(as.formula(formula.treatment.numerator)) %in% all.vars(as.formula(formula.outcome)))) # check that variables included in numerator for stabilization are also included in outcome regression
+  
   dat <- dat %>% select("id.new", "group", all.vars(stats::formula(formula.outcome)), 
                         all.vars(stats::formula(formula.treatment.numerator)), all.vars(stats::formula(formula.treatment))) %>% 
     filter(t.new < (followupdays + 4)) %>% # truncate just after desired follow-up time
