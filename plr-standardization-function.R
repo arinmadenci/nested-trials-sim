@@ -1,5 +1,6 @@
+# notes: assumes no censoring process (apart from truncation at administrative end of follow-up; can be adapted for censoring)
 
-plr_function <- function(dat, formula.outcome, followupdays){
+plr_standardization_function <- function(dat, formula.outcome, followupdays){
   options(warn=2)
   if (!require("pacman")) install.packages("pacman"); library(pacman)
   p_load(tidyverse, splines)
