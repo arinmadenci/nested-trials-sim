@@ -2,7 +2,7 @@
 if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(here)
 
 source("plr-standardization-function.R")
-load(here::here("expanded-dat.Rda"))
+if(!is.null(expanded.dat)){load(here::here("expanded-dat.Rda"))}
 standardization_formulas <- list()
 standardization_formulas$formula.outcome <- "mortality ~ 
                                 group*(ns(t.new, knots=c(10,20), Boundary.knots=c(3,30)) +

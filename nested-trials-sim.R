@@ -1,8 +1,9 @@
 # setup simulated dataset
 if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(tidyverse, here)
-n=1000 # simulating dataset with 500 individuals
-duration_followup_days = 50
-dat <- data.frame("id"=rep(1:n, each=duration_followup_days), # say we had full 90 day follow-up available for each individual in this example 
+n=1000 # simulating dataset with 1000 individuals
+duration_followup_days = 120
+LOS.eligibility = 30 # indiviual with length of stay less than this number will be considered eligible
+dat <- data.frame("id"=rep(1:n, each=duration_followup_days), # say we had full follow-up of this length available for each individual in this example 
                   "calendar.time"=rep(sample(1:365, n, replace=TRUE), each=duration_followup_days), # simulates days passed since the first possible enrollment
                   # (note that even if you are ultimately interested in 30-day follow-up as you mentioned, 
                   # you will want to have collected more than that initially because the nested trials start at different points in time;
@@ -24,7 +25,8 @@ dat <- data.frame("id"=rep(1:n, each=duration_followup_days), # say we had full 
 
 
 # expand trials
-new.dat <- dat %>% mutate(eligible = ifelse(icu==0,1,0)) %>% # example of defining eligibility criteria (in this case just based on not being in ICU), prior to expanding out the trials (but without restricting to eligible individuals only *yet*)
+new.dat <- dat %>% mutate(eligible = ifelse(icu==0,1,0), # example of defining eligibility criteria (in this case just based on not being in ICU), prior to expanding out the trials (but without restricting to eligible individuals only *yet*)
+                          eligible = ifelse(t < LOS.eligibility,eligible,0)) %>% # must be hospitalized for fewer than `LOS.eligibility` days to be eligible
   group_by(id) %>% mutate(clone = row_number()) %>% ungroup() %>% # in this case, "clone" is identical to "t"
   mutate(id_clone = paste0(id,"_",clone)) # temporarily creates a new id defined by "id" and "clone" number
 

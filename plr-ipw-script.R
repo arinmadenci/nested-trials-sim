@@ -2,7 +2,7 @@
 if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(here)
 
 source("plr-ipw-function.R")
-load(here::here("expanded-dat.Rda"))
+if(!is.null(expanded.dat)){load(here::here("expanded-dat.Rda"))}
 
 ipw_formulas <- list()
 ipw_formulas$formula.treatment <- "group.binary ~ 
