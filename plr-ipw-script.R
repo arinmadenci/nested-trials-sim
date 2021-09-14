@@ -2,7 +2,7 @@
 if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(here)
 
 source("plr-ipw-function.R")
-if(!is.null(expanded.dat)){load(here::here("expanded-dat.Rda"))}
+if(!exists("expanded.dat")){load(here::here("expanded-dat.Rda"))}
 
 ipw_formulas <- list()
 ipw_formulas$formula.treatment <- "group.binary ~ 
@@ -14,5 +14,4 @@ ipw_formulas$formula.treatment <- "group.binary ~
 ipw_formulas$formula.outcome <- "mortality ~ 
                                 group.binary*ns(t.new, knots=c(10,20), Boundary.knots=c(3,30))" # sample outcome regression
 
-plr_ipw_function(dat=expanded.dat, followupdays=30, 
-                 formula.treatment=ipw_formulas$formula.treatment, formula.treatment.numerator=NULL, formula.outcome=ipw_formulas$formula.outcome)
+

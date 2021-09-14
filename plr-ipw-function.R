@@ -8,7 +8,7 @@ plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator
   assertthat::are_equal(sum(all.vars(as.formula(formula.treatment.numerator)) %in% all.vars(as.formula(formula.outcome))),
                         length(all.vars(as.formula(formula.treatment.numerator)) %in% all.vars(as.formula(formula.outcome)))) # check that variables included in numerator for stabilization are also included in outcome regression
   
-  dat <- dat %>% select("id.new", "group", all.vars(stats::formula(formula.outcome)), 
+  dat <- dat %>% select("id.new", "group", "Freq", all.vars(stats::formula(formula.outcome)), 
                         all.vars(stats::formula(formula.treatment.numerator)), all.vars(stats::formula(formula.treatment))) %>% 
     filter(t.new < (followupdays + 4)) %>% # truncate just after desired follow-up time
     {.[complete.cases(.),]} # restricts to individuals with observed values for all variables in the model formula
@@ -16,11 +16,13 @@ plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator
   
   t_d <- glm(data=dat %>% filter(t.new==0), # fit restricted to baseline, because point treatment `assigned` at baseline
              family="quasibinomial",
+             weights = Freq,
              formula=as.formula(formula.treatment)) # this is the model fit to predict probability of treatment received
   dat$t_d_pred <- predict(object=t_d, newdata=dat, type="response")
   if (!is.null(formula.treatment.numerator)){
   t_n <- glm(data=dat %>% filter(t.new==0),
              family="quasibinomial",
+             weights = Freq,
              formula=as.formula(formula.treatment.numerator)) # this is the model fit to stabilize weights, if desired
   dat$t_n_pred <- predict(object=t_n, newdata=dat, type="response")
   } else(dat$t_n_pred = dat$group.binary)
