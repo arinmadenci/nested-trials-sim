@@ -14,4 +14,5 @@ ipw_formulas$formula.treatment <- "group.binary ~
 ipw_formulas$formula.outcome <- "mortality ~ 
                                 group.binary*ns(t.new, knots=c(10,20), Boundary.knots=c(3,30))" # sample outcome regression
 
-
+  plr_ipw_function(dat=expanded.dat, followupdays=30, 
+                   formula.treatment=ipw_formulas$formula.treatment, formula.treatment.numerator=NULL, formula.outcome=ipw_formulas$formula.outcome)
