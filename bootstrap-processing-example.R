@@ -24,7 +24,7 @@ xbar_0 <- empiric_pointest$ci_0
 
 resampled_pointests <- pbapply::pblapply(1:10, function(x){ # 10 resamples only, as illustration
   set.seed(x)
-  bs.ids <- sample(expanded.dat$id.new, size=length(unique(expanded.dat$id.new))) %>% table %>% as.data.frame %>% distinct %>% rename(id.new = '.')
+  bs.ids <- sample(unique(expanded.dat$id.new), size=length(unique(expanded.dat$id.new))) %>% table %>% as.data.frame %>% distinct %>% rename(id.new = '.')
   bs.dat <- left_join(bs.ids, expanded.dat, by="id.new")
   plr_ipw_function(dat=bs.dat, followupdays=30, 
                    formula.treatment=ipw_formulas$formula.treatment, formula.treatment.numerator=NULL, formula.outcome=ipw_formulas$formula.outcome)
