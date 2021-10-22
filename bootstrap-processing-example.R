@@ -4,7 +4,7 @@
 if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(here)
 
 source("plr-ipw-function.R")
-if(!exists("expanded.dat")){load(here::here("expanded-dat.Rda"))}
+load(here::here("expanded-dat.Rda"))
 
 ipw_formulas <- list()
 ipw_formulas$formula.treatment <- "group.binary ~ 
@@ -16,7 +16,7 @@ ipw_formulas$formula.treatment <- "group.binary ~
 ipw_formulas$formula.outcome <- "mortality ~ 
                                 group.binary*ns(t.new, knots=c(10,20), Boundary.knots=c(3,30))" # sample outcome regression
 
-empiric_pointest <- plr_ipw_function(dat=bs.dat, followupdays=30, 
+empiric_pointest <- plr_ipw_function(dat=expanded.dat, followupdays=30, 
                               formula.treatment=ipw_formulas$formula.treatment, formula.treatment.numerator=NULL, formula.outcome=ipw_formulas$formula.outcome)
 
 xbar_1 <- empiric_pointest$ci_1
@@ -24,18 +24,19 @@ xbar_0 <- empiric_pointest$ci_0
 
 resampled_pointests <- pbapply::pblapply(1:10, function(x){ # 10 resamples only, as illustration
   set.seed(x)
-  bs.ids <- sample(unique(expanded.dat$id.new), size=length(unique(expanded.dat$id.new))) %>% table %>% as.data.frame %>% distinct %>% rename(id.new = '.')
-  bs.dat <- left_join(bs.ids, expanded.dat, by="id.new")
+  bs.ids <- sample(unique(expanded.dat$id), size=length(unique(expanded.dat$id)), replace=TRUE) %>% table %>% as.data.frame %>% distinct %>% rename(id = '.') %>% 
+    mutate(id=as.character(id)) %>% mutate(id=as.numeric(id)) #avoid issue with factor variable converting to level numbers
+  bs.dat <- left_join(bs.ids, expanded.dat, by="id")
   plr_ipw_function(dat=bs.dat, followupdays=30, 
                    formula.treatment=ipw_formulas$formula.treatment, formula.treatment.numerator=NULL, formula.outcome=ipw_formulas$formula.outcome)
 })
 
-ci_0 <- resampled_pointests %>% as.data.frame %>% dplyr::select_at(vars(-starts_with("day."), -starts_with("ci_1")))
-lower_0 <- apply(ci_0 %>% dplyr::select(-"day"), 1, quantile, probs=0.025) - xbar_0
+ci_0 <- resampled_pointests %>% as.data.frame %>% dplyr::select_at(vars(-starts_with("day."), -starts_with("ci_1"))) #cumulative incidence
+lower_0 <- apply(ci_0 %>% dplyr::select(-"day"), 1, quantile, probs=0.025) - xbar_0 # note: monotonic function, so do not have to subtract xbar before taking quantile
 upper_0 <- apply(ci_0 %>% dplyr::select(-"day"), 1, quantile, probs=0.975) - xbar_0
 
 ci_1 <- resampled_pointests %>% as.data.frame %>% dplyr::select_at(vars(-starts_with("day."), -starts_with("ci_0")))
-lower_1 <- apply(ci_1 %>% dplyr::select(-"day"), 1, quantile, probs=0.025) - xbar_1
+lower_1 <- apply(ci_1 %>% dplyr::select(-"day"), 1, quantile, probs=0.025) - xbar_1 
 upper_1 <- apply(ci_1 %>% dplyr::select(-"day"), 1, quantile, probs=0.975) - xbar_1
 
 

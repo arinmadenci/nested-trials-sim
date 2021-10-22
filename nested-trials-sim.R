@@ -59,7 +59,7 @@ expanded.dat <- bind_rows(new.dat_plasma %>% mutate(group = "plasma", group.bina
   group_by(id.new) %>% 
   mutate(t.new = t - min(t), Freq=1) %>% # re-defines follow-up time to begin at the onset of each trial
   mutate_at(vars(t, calendar.time, systolic), list(bl = ~ first(.))) %>% # covariates indicating which calendar day, hospital day each trial was started on and baseline systolic BP
-  ungroup() %>% select(-c(id, id_clone, clone, t, systolic, calendar.time))
+  ungroup() %>% select(-c(id_clone, clone, t, systolic, calendar.time))
 rm(dat, new.dat, new.dat_no.plasma, new.dat_plasma, n, n.unexposed, temp.no.plasma.ids)
 
 save(expanded.dat, file=here::here("expanded-dat.Rda"))
