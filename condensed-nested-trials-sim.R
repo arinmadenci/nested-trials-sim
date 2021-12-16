@@ -24,4 +24,4 @@ dat <- data.frame("id"=rep(1:n, each=duration_followup_days), # say we had full 
 
 #### kept above for simplicity so as to have the same starting point
 
-dat2 <- dat %>% filter(intervention_lag==0) #excluded ineligible (due to already having had the intervention) person-rows
+
