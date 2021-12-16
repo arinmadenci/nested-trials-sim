@@ -1,5 +1,5 @@
 # setup simulated dataset
-if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(tidyverse, here)
+if (!require("pacman")) install.packages("pacman"); library(pacman); p_load(tidyverse, here, pbapply)
 n=1000 # simulating dataset with 1000 individuals
 duration_followup_days = 120
 LOS.eligibility = 30 # indiviual with length of stay less than this number will be considered eligible
