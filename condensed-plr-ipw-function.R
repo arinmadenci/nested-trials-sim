@@ -3,7 +3,7 @@
 plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator=NULL, formula.outcome, followupdays){
   options(warn=2)
   if (!require("pacman")) install.packages("pacman"); library(pacman)
-  p_load(tidyverse, splines); p_install(survival)
+  p_load(tidyverse, splines); p_install(survival, force=FALSE)
   
   if(!("Freq" %in% names(dat))){dat$Freq <- 1} #Freq column initialized (1 if non-bootstrap)
   
@@ -12,14 +12,9 @@ plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator
   
   dat <- dat %>% select("id", "intervention", "intervention_lag", "Freq", all.vars(stats::formula(formula.outcome)), 
                         all.vars(stats::formula(formula.treatment.numerator)), all.vars(stats::formula(formula.treatment))) %>% 
-    filter(t < (followupdays + 4)) %>% # truncate just after desired follow-up time
-    {.[complete.cases(.),]} # restricts to individuals with observed values for all variables in the model formula
+    filter(t_eligible < (followupdays + 4)) %>% # truncate an arbitrary duration after desired follow-up time
+    {.[complete.cases(.),]} # restricts to individuals with observed values for all variables in the model formula (for this example) - should really be done in pre-processing step
   print(length(unique(dat$id))) # check: number of individuals after restriction (compare to number of individuals prior to restriction)
-  
-  dat <- dat %>%  #excluded ineligible (due to already having had the intervention) person-rows
-    group_by(id) %>% mutate(t.new = max(t) - t,
-                            outcome = max(mortality)) %>% 
-    ungroup() %>% filter(intervention_lag==0) 
   
   t_d <- glm(data=dat, 
              family="quasibinomial",
@@ -41,20 +36,20 @@ plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator
   print(c("mean"=mean(dat$w), 
       quantile(dat$w, probs=c(0.99, 0.999))))
   
-  # non-parametric (could also fit outcome regression)
-  m <- survival::survfit(survival::Surv(dat$t.new, dat$outcome) ~ intervention, data=dat) #unadjusted
-  m.weighted <- survival::survfit(survival::Surv(dat$t.new, dat$outcome) ~ intervention, data=dat, weights=dat$w)# ip weighted
-  survminer::ggsurvplot(
-    fit = m, 
-    xlab = "Days", 
-    ylab = "Overall survival probability", ylim=c(0.5,1))
-  survminer::ggsurvplot(
-    fit = m.weighted, 
-    xlab = "Days", 
-    ylab = "Overall survival probability", ylim=c(0.5,1))
+  # non-parametric risk (could also fit outcome regression)
+  m <- survival::survfit(survival::Surv(dat$t_outcome, dat$outcome) ~ intervention, data=dat) #unadjusted
+  m.weighted <- survival::survfit(survival::Surv(dat$t_outcome, dat$outcome) ~ intervention, data=dat, weights=dat$w)# ip weighted
+  # survminer::ggsurvplot(
+  #   fit = m,
+  #   xlab = "Days",
+  #   ylab = "Overall survival probability", ylim=c(0.5,1))
+  # survminer::ggsurvplot(
+  #   fit = m.weighted,
+  #   xlab = "Days",
+  #   ylab = "Overall survival probability", ylim=c(0.5,1))
   
-  results <- summary(m.weighted, times=0:followupdays)
-  results_eof <- summary(m.weighted, times=followupdays)
+  results <- summary(m.weighted, times=0:followupdays, extend=TRUE)
+  results_eof <- summary(m.weighted, times=followupdays, extend=TRUE)
   
   output <- list()
   output$surv <- data.frame(survival=results$surv,

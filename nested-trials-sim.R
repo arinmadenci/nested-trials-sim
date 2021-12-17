@@ -24,7 +24,7 @@ dat <- data.frame("id"=rep(1:n, each=duration_followup_days), # say we had full 
   filter(is.na(mortality_temp)) %>% select(-contains("temp")) ## clumsy way to create a simulated dataset covariates
 
 
-# expand trials
+# explicitly expands trials (compare with condensed dataset and analysis)
 new.dat <- dat %>% mutate(eligible = ifelse(icu==0,1,0), # example of defining eligibility criteria (in this case just based on not being in ICU), prior to expanding out the trials (but without restricting to eligible individuals only *yet*)
                           eligible = ifelse(t < LOS.eligibility,eligible,0)) %>% # must be hospitalized for fewer than `LOS.eligibility` days to be eligible
   group_by(id) %>% mutate(clone = row_number()) %>% ungroup() %>% # in this case, "clone" is identical to "t"

@@ -27,7 +27,7 @@ plr_ipw_function <- function(dat, formula.treatment, formula.treatment.numerator
              weights = Freq,
              formula=as.formula(formula.treatment.numerator)) # this is the model fit to stabilize weights, if desired
   dat$t_n_pred <- predict(object=t_n, newdata=dat, type="response")
-  } else(dat$t_n_pred = dat$group.binary)
+  } else{dat$t_n_pred = dat$group.binary}
   
   dat <- dat %>% mutate(w = case_when(group.binary == 1 & t.new == 0 ~ t_n_pred / t_d_pred,
                                       group.binary == 0 & t.new == 0 ~ (1-t_n_pred) / (1-t_d_pred),
